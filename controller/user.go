@@ -1,6 +1,9 @@
 package controller
 
 import (
+	"fmt"
+	"github.com/RaymondCode/simple-demo/model"
+	"github.com/RaymondCode/simple-demo/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"sync/atomic"
@@ -9,7 +12,7 @@ import (
 // usersLoginInfo use map to store user info, and key is username+password for demo
 // user data will be cleared every time the server starts
 // test data: username=zhanglei, password=douyin
-var usersLoginInfo = map[string]User{
+var usersLoginInfo = map[string]model.User{
 	"zhangleidouyin": {
 		Id:            1,
 		Name:          "zhanglei",
@@ -22,37 +25,45 @@ var usersLoginInfo = map[string]User{
 var userIdSequence = int64(1)
 
 type UserLoginResponse struct {
-	Response
+	utils.Response
 	UserId int64  `json:"user_id,omitempty"`
 	Token  string `json:"token"`
 }
 
 type UserResponse struct {
-	Response
-	User User `json:"user"`
+	utils.Response
+	User model.User `json:"user"`
 }
 
 func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	token := username + password
+	token, err := utils.GenToken(username, password)
+	if err != nil {
+		fmt.Println("can not generate token")
+		c.JSON(http.StatusInternalServerError, UserLoginResponse{
+			Response: utils.Response{},
+			UserId:   0,
+			Token:    "",
+		})
+	}
 
-	if _, exist := usersLoginInfo[token]; exist {
+	if _, exist := usersLoginInfo[username]; exist {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
+			Response: utils.Response{StatusCode: 1, StatusMsg: "User already exist"},
 		})
 	} else {
 		atomic.AddInt64(&userIdSequence, 1)
-		newUser := User{
+		newUser := model.User{
 			Id:   userIdSequence,
 			Name: username,
 		}
-		usersLoginInfo[token] = newUser
+		usersLoginInfo[username] = newUser
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0},
+			Response: utils.Response{StatusCode: 0},
 			UserId:   userIdSequence,
-			Token:    username + password,
+			Token:    token,
 		})
 	}
 }
@@ -61,32 +72,43 @@ func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	token := username + password
+	if user, exist := usersLoginInfo[username]; exist {
+		token, err := utils.GenToken(username, password)
+		if err != nil {
+			fmt.Println("can not generate token")
+			c.JSON(http.StatusInternalServerError, UserLoginResponse{
+				Response: utils.Response{},
+				UserId:   0,
+				Token:    "",
+			})
+		}
 
-	if user, exist := usersLoginInfo[token]; exist {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0},
+			Response: utils.Response{StatusCode: 0},
 			UserId:   user.Id,
 			Token:    token,
 		})
 	} else {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
+			Response: utils.Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
 	}
 }
 
 func UserInfo(c *gin.Context) {
-	token := c.Query("token")
+	ctx, err := utils.GetClaimInfoByCtx(c)
+	if err != nil {
+		return
+	}
 
-	if user, exist := usersLoginInfo[token]; exist {
+	if user, exist := usersLoginInfo[ctx.UserName]; exist {
 		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{StatusCode: 0},
+			Response: utils.Response{StatusCode: 0},
 			User:     user,
 		})
 	} else {
 		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
+			Response: utils.Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
 	}
 }
