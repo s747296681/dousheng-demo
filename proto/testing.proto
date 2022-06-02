@@ -1,0 +1,12 @@
+syntax = "proto2";
+package douyin.core;
+message douyin_user_register_request{
+  required string username=1;
+  required string password=2;
+}
+message douyin_user_register_response{
+  required int32 status_code = 1;
+  optional  string  status_msg = 2;
+  required int64 user_id=3;
+  required string token=4;
+}

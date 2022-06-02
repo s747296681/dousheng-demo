@@ -7,36 +7,29 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	"strings"
 )
 
 // JWTAuth 中间件，检查token
 func JWTAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.Request.Header.Get("Authorization")
-		if authHeader == "" {
+		token := ctx.Query("token")
+		if authHeader == "" && token == "" {
 			ctx.JSON(http.StatusOK, gin.H{
 				"code": -1,
 				"msg":  "无权限访问，请求未携带token",
 			})
 			ctx.Abort() //结束后续操作
 			return
+		} else if authHeader == "" && token != "" {
+			authHeader = token
 		}
 		log.Print("token:", authHeader)
 
 		//按空格拆分
-		parts := strings.SplitN(authHeader, " ", 2)
-		if !(len(parts) == 2 && parts[0] == "Bearer") {
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": -1,
-				"msg":  "请求头中auth格式有误",
-			})
-			ctx.Abort()
-			return
-		}
 
 		//解析token包含的信息
-		claims, err := utils.ParseToken(parts[1])
+		claims, err := utils.ParseToken(authHeader)
 		if err != nil {
 			ctx.JSON(http.StatusOK, gin.H{
 				"code": -1,

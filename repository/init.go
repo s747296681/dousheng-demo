@@ -20,7 +20,7 @@ func init() {
 func GetDB() *gorm.DB {
 	once.Do(func() {
 		//change your dsn
-		mysqlDsn := "root:zz19980722@tcp(127.0.0.1:3306)/dousheng?charset=utf8mb4&parseTime=True&loc=Local"
+		mysqlDsn := "root:zz19980722@tcp(49.232.87.168:3306)/dousheng?charset=utf8mb4&parseTime=True&loc=Local"
 		db, err := gorm.Open(mysql.Open(mysqlDsn))
 		DB = db
 		if err != nil {
