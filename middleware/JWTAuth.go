@@ -14,15 +14,22 @@ func JWTAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.Request.Header.Get("Authorization")
 		token := ctx.Query("token")
-		if authHeader == "" && token == "" {
+		token2, ok := ctx.GetPostForm("token")
+		if authHeader == "" && token == "" && !ok {
 			ctx.JSON(http.StatusOK, gin.H{
 				"code": -1,
 				"msg":  "无权限访问，请求未携带token",
 			})
 			ctx.Abort() //结束后续操作
 			return
-		} else if authHeader == "" && token != "" {
-			authHeader = token
+		} else if authHeader == "" {
+			if token != "" {
+				authHeader = token
+			}
+			if token2 != "" {
+				authHeader = token2
+			}
+
 		}
 		log.Print("token:", authHeader)
 

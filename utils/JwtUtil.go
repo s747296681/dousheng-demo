@@ -22,7 +22,7 @@ func GenToken(userName string, passWord string) (string, error) {
 		userName,
 		passWord,
 		jwt.StandardClaims{
-			ExpiresAt: jwt.At(time.Now().Add(time.Minute * 5)), //5分钟后过期
+			ExpiresAt: jwt.At(time.Now().Add(time.Hour * 1)), //1小时后过期
 		},
 	}
 

@@ -17,9 +17,9 @@ func InitRouter(r *gin.Engine) {
 	apiRouter.POST("/user/login/", controller.Login)
 
 	apiRouter.POST("/user/test111/", controller.Test)
+	apiRouter.GET("/feed/", controller.Feed)
 
 	apiRouter.Use(middelware.JWTAuth())
-	apiRouter.GET("/feed/", controller.Feed)
 	apiRouter.GET("/user/", controller.GetUserInfo)
 
 	apiRouter.POST("/publish/action/", controller.Publish)
