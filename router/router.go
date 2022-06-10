@@ -35,4 +35,6 @@ func InitRouter(r *gin.Engine) {
 	apiRouter.POST("/relation/action/", controller.RelationAction)
 	apiRouter.GET("/relation/follow/list/", controller.FollowList)
 	apiRouter.GET("/relation/follower/list/", controller.FollowerList)
+
+	apiRouter.GET("/test/", controller.Test2)
 }

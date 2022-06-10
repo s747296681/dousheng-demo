@@ -1,0 +1,21 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+
+客户端 -> Controller: 发送请求
+Controller --> Jwt中间件 : 检查token信息
+Jwt中间件 -->Controller:返回结果
+Controller --> Service:调用service层
+Service --> Service:逻辑处理
+Service --> TencentCos:调用Cos客户端上传视频
+TencentCos --> Service :返回上传结果
+Service --> Repository:调用Repository层
+database    DB
+Repository --> DB: 数据落库
+DB --> Repository:返回落库结果
+Repository-->Service:返回处理结果
+Service -->Controller:返回处理结果
+Controller -> 客户端: 返回结果
+@enduml

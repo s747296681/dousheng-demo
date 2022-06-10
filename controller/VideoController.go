@@ -1,10 +1,11 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/RaymondCode/simple-demo/model"
 	"github.com/RaymondCode/simple-demo/service"
-	"github.com/RaymondCode/simple-demo/utils"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -91,15 +92,15 @@ func Feed(c *gin.Context) {
 	if paramTime == "" {
 		queryTime = time.Now()
 	} else {
-		ctime, err := utils.ParseStringTime(paramTime)
-		if err != nil {
-			c.JSON(http.StatusOK, model.FeedResponse{
-				Response:  model.Response{StatusCode: -1},
-				VideoList: nil,
-				NextTime:  time.Now().Unix(),
-			})
-		}
-		queryTime = ctime
+		//ctime, err := utils.ParseStringTime(paramTime)
+		//if err != nil {
+		//	c.JSON(http.StatusOK, model.FeedResponse{
+		//		Response:  model.Response{StatusCode: -1},
+		//		VideoList: nil,
+		//		NextTime:  time.Now().Unix(),
+		//	})
+		//}
+		queryTime = time.Now()
 	}
 	videos, times, err := service.GetVideos(queryTime)
 	if err != nil {
@@ -113,5 +114,19 @@ func Feed(c *gin.Context) {
 		Response:  model.Response{StatusCode: 0},
 		VideoList: videos,
 		NextTime:  times,
+	})
+}
+
+func Test2(c *gin.Context) {
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(body))
+	fmt.Println(*c.Request)
+	fmt.Println(c.Keys)
+	fmt.Printf("%s", c.Request)
+	c.JSON(http.StatusOK, model.FeedResponse{
+		Response: model.Response{StatusCode: 0, StatusMsg: string(body)},
 	})
 }
